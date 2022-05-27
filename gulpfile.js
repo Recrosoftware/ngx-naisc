@@ -1,8 +1,10 @@
+const {readdir, writeFile, mkdir} = require('fs/promises');
+
 const {join} = require('path');
 const {spawn} = require('child_process');
 
 const gulp = require('gulp');
-const sass = require('gulp-sass');
+const sass = require('sass');
 
 const PROJECT_ROOT = __dirname;
 
@@ -14,7 +16,7 @@ const N_CORE_DEST = join(PROJECT_ROOT, 'dist', 'naisc-core');
 function build() {
   return new Promise(resolve => {
     console.log();
-    const buildProc = spawn(NG, ['build', 'naisc-core', '--prod'], {
+    const buildProc = spawn(NG, ['build', 'naisc-core'], {
       cwd: PROJECT_ROOT,
       shell: true,
       stdio: 'inherit',
@@ -28,13 +30,22 @@ function build() {
   });
 }
 
-function themesBuild() {
-  const source = join(N_CORE, 'src', 'resources', 'themes', 'pre-built', '*.scss');
-  const target = join(N_CORE_DEST, 'themes', 'pre-built');
+async function themesBuild() {
+  const sourcePath = join(N_CORE, 'src', 'resources', 'themes', 'pre-built');
+  const targetPath = join(N_CORE_DEST, 'themes', 'pre-built');
 
-  return gulp.src(source)
-    .pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError))
-    .pipe(gulp.dest(target));
+  await mkdir(targetPath, {recursive: true});
+
+  for (const file of await readdir(sourcePath)) {
+    if (!/^[^_].*\.scss$/.test(file)) continue;
+
+    const source = join(sourcePath, file);
+    const target = join(targetPath, file.replace(/\.scss$/, '.css'));
+
+    const compiled = sass.compile(source);
+
+    await writeFile(target, compiled.css, {encoding: 'utf-8'});
+  }
 }
 
 function themesCopyBuilder() {
