@@ -83,7 +83,6 @@ function transformLinear(start: number, end: number, t: number): number {
   host: {
     'class': 'naisc-container'
   },
-  entryComponents: [NaiscItemComponent],
   encapsulation: ViewEncapsulation.None
 })
 /* tslint:disable-next-line:component-class-suffix */

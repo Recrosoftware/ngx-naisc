@@ -76,9 +76,6 @@ import {NaiscValidationError} from './shared/naisc-validation';
     'class': 'naisc-item',
     '[style.z-index]': 'currentZIndex'
   },
-  entryComponents: [
-    NaiscDefaultItemComponent
-  ],
   encapsulation: ViewEncapsulation.None
 })
 export class NaiscItemComponent implements AfterViewInit, OnDestroy {

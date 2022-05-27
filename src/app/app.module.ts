@@ -10,10 +10,6 @@ import {TestContentComponent} from './test-content.component';
 @NgModule({
   declarations: [
     AppComponent,
-
-    TestContentComponent
-  ],
-  entryComponents: [
     TestContentComponent
   ],
   imports: [
