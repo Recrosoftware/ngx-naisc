@@ -1,4 +1,4 @@
-import {Input} from '@angular/core';
+import {Directive, Input} from '@angular/core';
 import {Observable} from 'rxjs';
 
 import {NaiscItemDescriptor} from './naisc-item-descriptor';
@@ -7,6 +7,7 @@ import {NaiscValidationError} from './naisc-validation';
 
 const DEFAULT_PIN_NAME = '---';
 
+@Directive()
 export abstract class NaiscItemContent {
   @Input() public item: NaiscItemDescriptor;
   @Input() public overlay: HTMLElement;
