@@ -10,13 +10,14 @@
       "prefix": "naisc",
       "schematics": {
         "@schematics/angular:component": {
-          "styleext": "scss"
+          "style": "scss"
         }
       },
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "aot": true,
             "outputPath": "dist/naisc-showcase",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -34,6 +35,12 @@
           },
           "configurations": {
             "production": {
+              "budgets": [
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ],
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -90,7 +97,8 @@
           },
           "configurations": {
             "production": {
-              "project": "projects/naisc-core/ng-package.prod.json"
+              "project": "projects/naisc-core/ng-package.prod.json",
+              "tsConfig": "projects/naisc-core/tsconfig.lib.prod.json"
             }
           }
         },
