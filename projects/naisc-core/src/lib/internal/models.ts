@@ -1,7 +1,7 @@
-import {ComponentRef, Type} from '@angular/core';
-import {NaiscItemComponent} from '../naisc-item.component';
-import {NaiscItemContent} from '../shared/naisc-item-content';
-import {NaiscItemDescriptor, NaiscPinDescriptor} from '../shared/naisc-item-descriptor';
+import type {ComponentRef, Type} from '@angular/core';
+import type {NaiscItemComponent} from '../naisc-item.component';
+import type {NaiscItemContent} from '../shared/naisc-item-content';
+import type {NaiscItemDescriptor, NaiscPinDescriptor} from '../shared/naisc-item-descriptor';
 import {NAISC_METADATA_ACCESSOR} from './symbols';
 
 

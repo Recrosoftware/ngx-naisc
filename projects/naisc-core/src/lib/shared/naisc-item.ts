@@ -1,33 +1,25 @@
-import {TypeDecorator} from '@angular/core';
-
+import type {TypeDecorator} from '@angular/core';
 import {AUTO_INJECTED_CONTENTS} from '../internal/containers';
-import {NaiscMetadata, NaiscType} from '../internal/models';
+import type {NaiscType} from '../internal/models';
+import {NaiscMetadata} from '../internal/models';
 import {NAISC_METADATA_ACCESSOR} from '../internal/symbols';
-
 import {NaiscItemContent} from './naisc-item-content';
-import {NaiscItemDescriptor} from './naisc-item-descriptor';
+import type {NaiscItemDescriptor} from './naisc-item-descriptor';
+import type {NaiscItemOptions} from './naisc-item-options';
 
-import {NaiscItemOptions} from './naisc-item-options';
-
-
-const DEFAULT_OPTIONS: NaiscItemOptions = {
-  autoInject: false,
-  inputPins: [],
-  outputPins: []
-};
-
-function isArray(obj: string | string[]): obj is string[] {
-  return obj instanceof Array;
-}
 
 export function NaiscItem(type: string | string[], opts?: Partial<NaiscItemOptions>): TypeDecorator {
-  const options = {...DEFAULT_OPTIONS, ...opts};
+  const {
+    autoInject = false,
+    inputPins = [],
+    outputPins = []
+  } = opts || {};
 
-  if (!isArray(type)) {
-    type = [type];
-  }
+  if (!Array.isArray(type)) type = [type];
 
-  type = type.filter((t, i, a) => a.indexOf(t) === i).sort();
+  type = type
+    .sort()
+    .filter((t, i, a) => i === 0 || t !== a[i - 1]);
 
   return (target: NaiscType) => {
     if (type.length < 1) {
@@ -38,7 +30,7 @@ export function NaiscItem(type: string | string[], opts?: Partial<NaiscItemOptio
       throw new Error(`Decorated class '${target.name}' must extend 'NaiscItemContent' class.`);
     }
 
-    if (options.autoInject) {
+    if (autoInject) {
       (type as string[]).forEach(t => {
         if (t in AUTO_INJECTED_CONTENTS) {
           const existing = AUTO_INJECTED_CONTENTS[t];
@@ -58,8 +50,8 @@ export function NaiscItem(type: string | string[], opts?: Partial<NaiscItemOptio
         type: type[0],
         position: Object.seal({x: 0, y: 0}),
         pins: Object.freeze({
-          in: options.inputPins.map(p => ({...p})),
-          out: options.outputPins.map(p => ({...p}))
+          in: inputPins.map(p => ({...p})),
+          out: outputPins.map(p => ({...p}))
         }),
         state: {}
       };
@@ -74,5 +66,7 @@ export function NaiscItem(type: string | string[], opts?: Partial<NaiscItemOptio
       configurable: false,
       writable: false
     });
+
+    return target;
   };
 }

@@ -10,8 +10,8 @@ import {NaiscPinDescriptor} from './shared/naisc-item-descriptor';
   selector: 'path[naiscItemLink]'
 })
 export class NaiscItemLinkDirective implements OnChanges, DoCheck {
-  @Input() public sourcePin: NaiscPinDescriptor & { [NAISC_PIN_POSITION]: ViewProjection };
-  @Input() public targetPin: NaiscPinDescriptor & { [NAISC_PIN_POSITION]: ViewProjection };
+  @Input() public sourcePin: NaiscPinDescriptor & { [NAISC_PIN_POSITION]?: ViewProjection };
+  @Input() public targetPin: NaiscPinDescriptor & { [NAISC_PIN_POSITION]?: ViewProjection };
   @Input() public targetPosition: ViewProjection;
 
   @HostBinding('attr.d')

@@ -1,4 +1,4 @@
-import {NaiscPinDescriptor} from './naisc-item-descriptor';
+import type {NaiscPinDescriptor} from './naisc-item-descriptor';
 
 
 export interface NaiscItemOptions {

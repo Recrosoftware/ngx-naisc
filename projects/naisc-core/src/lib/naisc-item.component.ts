@@ -14,15 +14,11 @@ import {
   ViewContainerRef,
   ViewEncapsulation
 } from '@angular/core';
-
 import {fromEvent, Observable, Subscription} from 'rxjs';
 import {filter, share, startWith, switchMap, takeUntil, tap} from 'rxjs/operators';
-
-import {RsAsyncInput} from './common/rs-async.pipe';
 import {runAsyncTask} from './internal/functions';
 import {NaiscLinkEvent, NaiscType, ViewProjection} from './internal/models';
 import {NAISC_METADATA_ACCESSOR, NAISC_PIN_POSITION} from './internal/symbols';
-
 import {NaiscDefaultItemComponent} from './naisc-default-item.component';
 import {NaiscItemPinDirective} from './naisc-item-pin.directive';
 import {NaiscExtent} from './shared/naisc-extent';
@@ -35,8 +31,8 @@ import {NaiscValidationError} from './shared/naisc-validation';
   selector: 'div[naiscItem]',
   template: `
     <div class="naisc-item-track-bar" #titleBar>
-      {{getTitle() | rsAsync}}
-      <i *ngIf="!(isPermanent() | rsAsync:true) && !readonly"
+      {{ getTitle() | naiscToObservable | async }}
+      <i *ngIf="(isPermanent() | naiscToObservable | async) === false && !readonly"
          class="naisc-item-close-btn {{removeItemIconClass}}"
          (click)="onRemoveClick($event)" (mousedown)="$event.stopPropagation()"></i>
     </div>
@@ -44,7 +40,7 @@ import {NaiscValidationError} from './shared/naisc-validation';
     <div class="naisc-item-pins">
       <ul class="naisc-item-pins-in">
         <li *ngFor="let pin of item.pins.in; let idx = index">
-          <span>{{getInputPinName(idx) | rsAsync}}</span>
+          <span>{{ getInputPinName(idx) | naiscToObservable | async }}</span>
           <div [naiscItemPin]="pin" [item]="item" [type]="'in'"
                [readonly]="readonly"
                [linkEvents]="linkEvents"
@@ -56,7 +52,7 @@ import {NaiscValidationError} from './shared/naisc-validation';
       </ul>
       <ul class="naisc-item-pins-out">
         <li *ngFor="let pin of item.pins.out; let idx = index">
-          <span>{{getOutputPinName(idx) | rsAsync}}</span>
+          <span>{{ getOutputPinName(idx) | naiscToObservable | async }}</span>
           <div [naiscItemPin]="pin" [item]="item" [type]="'out'"
                [readonly]="readonly"
                [linkEvents]="linkEvents"
@@ -163,20 +159,20 @@ export class NaiscItemComponent implements AfterViewInit, OnDestroy {
     this.updateZIndex();
   }
 
-  public getTitle(): RsAsyncInput<string> {
-    return this.contentRef ? this.contentRef.instance.getTitle() : '';
+  public getTitle() {
+    return this.contentRef?.instance.getTitle() ?? '';
   }
 
-  public getInputPinName(index: number): RsAsyncInput<string> {
-    return this.contentRef ? this.contentRef.instance.getInputPinName(index) : '';
+  public getInputPinName(index: number) {
+    return this.contentRef?.instance.getInputPinName(index) ?? '';
   }
 
-  public getOutputPinName(index: number): RsAsyncInput<string> {
-    return this.contentRef ? this.contentRef.instance.getOutputPinName(index) : '';
+  public getOutputPinName(index: number) {
+    return this.contentRef?.instance.getOutputPinName(index) ?? '';
   }
 
-  public isPermanent(): RsAsyncInput<boolean> {
-    return this.contentRef ? this.contentRef.instance.isPermanent() : false;
+  public isPermanent() {
+    return this.contentRef?.instance.isPermanent() ?? false;
   }
 
   public onRemoveClick(evt: Event): void {

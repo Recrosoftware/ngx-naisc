@@ -1,4 +1,4 @@
-import {NaiscItemDescriptor} from './naisc-item-descriptor';
+import type {NaiscItemDescriptor} from './naisc-item-descriptor';
 
 
 export interface NaiscDump {

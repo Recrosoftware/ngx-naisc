@@ -1,5 +1,5 @@
-import {NaiscExtent} from './naisc-extent';
-import {NaiscItemDescriptor} from './naisc-item-descriptor';
+import type {NaiscExtent} from './naisc-extent';
+import type {NaiscItemDescriptor} from './naisc-item-descriptor';
 
 
 export type NaiscValidationError = { [key: string]: any; } | null;
