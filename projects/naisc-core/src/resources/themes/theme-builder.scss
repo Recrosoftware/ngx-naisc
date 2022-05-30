@@ -1,35 +1,35 @@
-$naisc-item-min-width: 170px;
-$naisc-item-bg-color: #97d5dc;
-$naisc-item-border-color: #628a8f;
-$naisc-item-text-color: #000000;
+$naisc-item-min-width: 170px !default;
+$naisc-item-bg-color: #97d5dc !default;
+$naisc-item-border-color: #628a8f !default;
+$naisc-item-text-color: #000000 !default;
 
-$naisc-item-track-height: 24px;
-$naisc-item-track-bg-color: #dcb45a;
-$naisc-item-track-close-btn-color: #d2412d;
-$naisc-item-track-text-color: #000000;
+$naisc-item-track-height: 24px !default;
+$naisc-item-track-bg-color: #dcb45a !default;
+$naisc-item-track-close-btn-color: #d2412d !default;
+$naisc-item-track-text-color: #000000 !default;
 
-$naisc-link-color: #d2412d;
-$naisc-link-color-temp: #54be46;
+$naisc-link-color: #d2412d !default;
+$naisc-link-color-temp: #54be46 !default;
 
-$naisc-pin-color: #54be46;
-$naisc-pin-border: #173a42;
-$naisc-pin-hover-color: #5ed54f;
-$naisc-pin-hover-border: $naisc-pin-border;
+$naisc-pin-color: #54be46 !default;
+$naisc-pin-border: #173a42 !default;
+$naisc-pin-hover-color: #5ed54f !default;
+$naisc-pin-hover-border: $naisc-pin-border !default;
 
-$naisc-pin-active-color: $naisc-pin-color;
-$naisc-pin-active-border: $naisc-pin-border;
-$naisc-pin-active-hover-color: $naisc-pin-hover-color;
-$naisc-pin-active-hover-border: $naisc-pin-active-border;
+$naisc-pin-active-color: $naisc-pin-color !default;
+$naisc-pin-active-border: $naisc-pin-border !default;
+$naisc-pin-active-hover-color: $naisc-pin-hover-color !default;
+$naisc-pin-active-hover-border: $naisc-pin-active-border !default;
 
-$naisc-pin-invalid-color: #a0a0a0;
-$naisc-pin-invalid-border: $naisc-pin-border;
-$naisc-pin-invalid-hover-color: $naisc-pin-invalid-color;
-$naisc-pin-invalid-hover-border: $naisc-pin-invalid-border;
+$naisc-pin-invalid-color: #a0a0a0 !default;
+$naisc-pin-invalid-border: $naisc-pin-border !default;
+$naisc-pin-invalid-hover-color: $naisc-pin-invalid-color !default;
+$naisc-pin-invalid-hover-border: $naisc-pin-invalid-border !default;
 
-$naisc-pin-highlight-color: #69bbbe;
-$naisc-pin-highlight-border: $naisc-pin-border;
-$naisc-pin-highlight-hover-color: #6ec3c6;
-$naisc-pin-highlight-hover-border: $naisc-pin-highlight-border;
+$naisc-pin-highlight-color: #69bbbe !default;
+$naisc-pin-highlight-border: $naisc-pin-border !default;
+$naisc-pin-highlight-hover-color: #6ec3c6 !default;
+$naisc-pin-highlight-hover-border: $naisc-pin-highlight-border !default;
 
 @mixin naisc-core() {
   .naisc-item {

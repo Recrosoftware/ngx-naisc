@@ -1,6 +1,6 @@
 {
   "name": "@naisc/core",
-  "version": "0.13.4",
+  "version": "0.13.5",
   "dependencies": {
     "tslib": "^2.0.0"
   },
