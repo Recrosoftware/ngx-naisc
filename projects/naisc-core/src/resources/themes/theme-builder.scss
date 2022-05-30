@@ -42,6 +42,7 @@ $naisc-pin-highlight-hover-border: $naisc-pin-highlight-border;
     .naisc-item-track-bar {
       padding: 0 3px;
 
+      min-width: max-content;
       height: $naisc-item-track-height;
       line-height: $naisc-item-track-height;
 
@@ -67,22 +68,27 @@ $naisc-pin-highlight-hover-border: $naisc-pin-highlight-border;
         &.active {
           background-color: $naisc-pin-active-color;
           border: 1px solid $naisc-pin-active-border;
+
           &:hover {
             background-color: $naisc-pin-active-hover-color;
             border: 1px solid $naisc-pin-active-hover-border;
           }
         }
+
         &.invalid {
           background-color: $naisc-pin-invalid-color;
           border: 1px solid $naisc-pin-invalid-border;
+
           &:hover {
             background-color: $naisc-pin-invalid-hover-color;
             border: 1px solid $naisc-pin-invalid-hover-border;
           }
         }
+
         &.highlight {
           background-color: $naisc-pin-highlight-color;
           border: 1px solid $naisc-pin-highlight-border;
+
           &:hover {
             background-color: $naisc-pin-highlight-hover-color;
             border: 1px solid $naisc-pin-highlight-hover-border;
