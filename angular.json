@@ -100,5 +100,7 @@
       }
     }
   },
-  "defaultProject": "naisc-showcase"
+  "cli": {
+    "analytics": false
+  }
 }
