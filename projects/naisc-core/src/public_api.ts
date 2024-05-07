@@ -3,7 +3,6 @@
  */
 
 export * from './lib/naisc';
-export * from './lib/naisc.module';
 
 export * from './lib/shared/naisc-dump';
 export * from './lib/shared/naisc-events';

@@ -1,9 +1,10 @@
 import {Component} from '@angular/core';
-
 import {NaiscItemContent} from './shared/naisc-item-content';
 
 
 @Component({
+  standalone: true,
+  imports: [],
   template: '<!-- No Content -->'
 })
 export class NaiscDefaultItemComponent extends NaiscItemContent {

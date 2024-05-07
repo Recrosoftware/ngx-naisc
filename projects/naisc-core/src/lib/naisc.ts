@@ -2,11 +2,10 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
-  ComponentFactory,
-  ComponentFactoryResolver,
   ElementRef,
   EventEmitter,
   HostListener,
+  inject,
   Input,
   NgZone,
   OnChanges,
@@ -15,7 +14,7 @@ import {
   Output,
   SimpleChanges,
   Type,
-  ViewChild,
+  viewChild,
   ViewContainerRef,
   ViewEncapsulation
 } from '@angular/core';
@@ -33,9 +32,8 @@ import {
   ViewProjection
 } from './internal/models';
 import {NAISC_METADATA_ACCESSOR} from './internal/symbols';
-
+import {NaiscItemLinkDirective} from './naisc-item-link.directive';
 import {NaiscItemComponent} from './naisc-item.component';
-
 import {NaiscDump} from './shared/naisc-dump';
 import {NaiscMouseEvent} from './shared/naisc-events';
 import {NaiscExtent} from './shared/naisc-extent';
@@ -62,18 +60,26 @@ function transformLinear(start: number, end: number, t: number): number {
 @Component({
   selector: 'div[naisc]',
   exportAs: 'naisc',
+  standalone: true,
+  imports: [
+    NaiscItemLinkDirective
+  ],
   template: `
     <div #view class="naisc-view">
       <svg class="naisc-links">
-        <path *ngIf="linkingRef" class="naisc-link naisc-temporary-link" naiscItemLink
-              [sourcePin]="linkingRef.pin" [targetPosition]="linkingRef.target"></path>
+        @if (linkingRef) {
+          <path class="naisc-link naisc-temporary-link" naiscItemLink
+                [sourcePin]="linkingRef.pin" [targetPosition]="linkingRef.target"></path>
+        }
 
-        <path *ngFor="let link of links" class="naisc-link" naiscItemLink
-              [sourcePin]="link.from.pin" [targetPin]="link.to.pin"></path>
+        @for (link of links; track link) {
+          <path class="naisc-link" naiscItemLink
+                [sourcePin]="link.from.pin" [targetPin]="link.to.pin"></path>
+        }
       </svg>
 
       <div class="naisc-items">
-        <ng-container #itemsContainer></ng-container>
+        <ng-container #itemsContainer/>
       </div>
 
       <div #overlay class="naisc-overlay"></div>
@@ -87,14 +93,9 @@ function transformLinear(start: number, end: number, t: number): number {
 })
 /* tslint:disable-next-line:component-class-suffix */
 export class Naisc implements OnInit, AfterViewInit, OnChanges, OnDestroy {
-  @ViewChild('view', {static: true, read: ElementRef})
-  public viewElementRef: ElementRef;
-
-  @ViewChild('itemsContainer', {static: true, read: ViewContainerRef})
-  public containerRef: ViewContainerRef;
-
-  @ViewChild('overlay', {static: true, read: ElementRef})
-  public overlayRef: ElementRef;
+  public readonly viewElementRef = viewChild.required<unknown, ElementRef<HTMLDivElement>>('view', {read: ElementRef});
+  public readonly containerRef = viewChild.required('itemsContainer', {read: ViewContainerRef});
+  public readonly overlayRef = viewChild.required<unknown, ElementRef<HTMLDivElement>>('overlay', {read: ElementRef});
 
   @Input() public snap: boolean;
   @Input() public minZoom: number;
@@ -154,20 +155,16 @@ export class Naisc implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   private readonly projectionCurrent: ViewProjection = {x: 0, y: 0, z: 1};
 
   private readonly items: NaiscItemInstanceRef[] = [];
-  private readonly itemFactory: ComponentFactory<NaiscItemComponent>;
 
   private readonly state: { [key: string]: any };
   private readonly state$: Observable<{ key: string, value: any }>;
   private readonly stateSource$: Subject<string>;
 
-  constructor(private el: ElementRef,
-              private zone: NgZone,
-              private changeDetector: ChangeDetectorRef,
-              private resolver: ComponentFactoryResolver) {
-    this.itemFactory = this.resolver.resolveComponentFactory(NaiscItemComponent);
+  private readonly el = inject(ElementRef);
+  private readonly zone = inject(NgZone);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
-    this.readonly = false;
-
+  constructor() {
     this.stateSource$ = new BehaviorSubject(null);
     this.state = {};
     this.state$ = this.stateSource$
@@ -177,6 +174,7 @@ export class Naisc implements OnInit, AfterViewInit, OnChanges, OnDestroy {
         share()
       );
 
+    this.readonly = false;
     this.snap = DEFAULT_SNAP;
     this.minZoom = DEFAULT_MIN_ZOOM;
     this.maxZoom = DEFAULT_MAX_ZOOM;
@@ -450,7 +448,7 @@ export class Naisc implements OnInit, AfterViewInit, OnChanges, OnDestroy {
       return;
     }
 
-    const itemRef = this.containerRef.createComponent(this.itemFactory);
+    const itemRef = this.containerRef().createComponent(NaiscItemComponent);
     const instance = itemRef.instance;
 
     instance.item = item;
@@ -459,7 +457,7 @@ export class Naisc implements OnInit, AfterViewInit, OnChanges, OnDestroy {
 
     instance.readonly = this.readonly;
 
-    instance.overlayRef = this.getOverlayElement();
+    instance.overlayRef = this.overlayRef().nativeElement;
     instance.currentZIndex = ++this.currentItemsZIndex;
 
     instance.fireStateChange = () => this.emitStateChanged();
@@ -509,7 +507,7 @@ export class Naisc implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   }
 
   public clear(): void {
-    this.containerRef.clear();
+    this.containerRef().clear();
     this.items.length = 0;
     this.links = [];
 
@@ -818,20 +816,12 @@ export class Naisc implements OnInit, AfterViewInit, OnChanges, OnDestroy {
     this.requestRender(useAnimations);
   }
 
-  public getOverlayElement(): HTMLElement {
-    return this.overlayRef.nativeElement;
-  }
-
   private render(useAnimation: boolean = true, thisZone: boolean = false): void {
-    if (!this.viewElementRef) {
-      return;
-    }
-
     const _render = () => {
       useAnimation = useAnimation && !this.dragging && typeof window.requestAnimationFrame === 'function';
 
       const c = this.el.nativeElement as HTMLDivElement;
-      const v = this.viewElementRef.nativeElement as HTMLDivElement;
+      const v = this.viewElementRef().nativeElement as HTMLDivElement;
 
       const setStyle = (x: number, y: number, zoom: number) => {
         const bgW = BACKGROUND_SIZE * zoom;

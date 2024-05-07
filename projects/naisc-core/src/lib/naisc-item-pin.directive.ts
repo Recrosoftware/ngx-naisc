@@ -10,15 +10,14 @@ import {
   Output
 } from '@angular/core';
 import {Observable, Subscription} from 'rxjs';
-
 import {NaiscLinkEvent, ViewProjection} from './internal/models';
 import {NAISC_PIN_POSITION} from './internal/symbols';
-
 import {NaiscItemDescriptor, NaiscPinDescriptor} from './shared/naisc-item-descriptor';
 
 
 @Directive({
   selector: 'div[naiscItemPin]',
+  standalone: true,
   host: {
     'class': 'naisc-item-pin',
     '[class.multi]': 'pin.multiple',

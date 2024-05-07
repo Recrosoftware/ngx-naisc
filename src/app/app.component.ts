@@ -1,10 +1,14 @@
-import {AfterViewInit, Component, ViewChild} from '@angular/core';
-import {Naisc, NaiscDump, NaiscItemDescriptor, NaiscMouseEvent} from '@naisc/core';
+import {AfterViewInit, Component, Type, ViewChild} from '@angular/core';
+import {Naisc, NaiscDump, NaiscItemContent, NaiscItemDescriptor, NaiscMouseEvent} from '@naisc/core';
 import {TestContentComponent} from './test-content.component';
 
 
 @Component({
   selector: 'naisc-showcase',
+  standalone: true,
+  imports: [
+    Naisc
+  ],
   template: `
     <div naisc
          [readonly]="readonlyState"
@@ -51,7 +55,7 @@ export class AppComponent implements AfterViewInit {
 
   public readonlyState = false;
 
-  public templates = [
+  public templates: Type<NaiscItemContent>[] = [
     TestContentComponent
   ];
 

@@ -1,12 +1,12 @@
 {
   "name": "@naisc/core",
   "license": "MIT",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "dependencies": {
     "tslib": "^2.0.0"
   },
   "peerDependencies": {
-    "@angular/common": ">= 16.0.0",
-    "@angular/core": ">= 16.0.0"
+    "@angular/common": ">= 17.3.0",
+    "@angular/core": ">= 17.3.0"
   }
 }

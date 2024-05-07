@@ -1,21 +1,22 @@
+import {AsyncPipe} from '@angular/common';
 import {
   AfterViewInit,
   Component,
-  ComponentFactoryResolver,
   ComponentRef,
   ElementRef,
   HostListener,
+  inject,
   NgZone,
   OnDestroy,
-  QueryList,
   Type,
-  ViewChild,
-  ViewChildren,
+  viewChild,
+  viewChildren,
   ViewContainerRef,
   ViewEncapsulation
 } from '@angular/core';
 import {fromEvent, Observable, Subscription} from 'rxjs';
 import {filter, share, startWith, switchMap, takeUntil, tap} from 'rxjs/operators';
+import {NaiscToObservablePipe} from './common/naisc-to-observable.pipe';
 import {runAsyncTask} from './internal/functions';
 import {NaiscLinkEvent, NaiscType, ViewProjection} from './internal/models';
 import {NAISC_METADATA_ACCESSOR, NAISC_PIN_POSITION} from './internal/symbols';
@@ -29,43 +30,55 @@ import {NaiscValidationError} from './shared/naisc-validation';
 
 @Component({
   selector: 'div[naiscItem]',
+  standalone: true,
+  imports: [
+    AsyncPipe,
+    NaiscItemPinDirective,
+    NaiscToObservablePipe
+  ],
   template: `
     <div class="naisc-item-track-bar" #titleBar>
       {{ getTitle() | naiscToObservable | async }}
-      <i *ngIf="(isPermanent() | naiscToObservable | async) === false && !readonly"
-         class="naisc-item-close-btn {{removeItemIconClass}}"
-         (click)="onRemoveClick($event)" (mousedown)="$event.stopPropagation()"></i>
+      @if ((isPermanent() | naiscToObservable | async) === false && !readonly) {
+        <i class="naisc-item-close-btn {{removeItemIconClass}}"
+           (click)="onRemoveClick($event)" (mousedown)="$event.stopPropagation()"></i>
+      }
     </div>
 
     <div class="naisc-item-pins">
       <ul class="naisc-item-pins-in">
-        <li *ngFor="let pin of item.pins.in; let idx = index">
-          <span>{{ getInputPinName(idx) | naiscToObservable | async }}</span>
-          <div [naiscItemPin]="pin" [item]="item" [type]="'in'"
-               [readonly]="readonly"
-               [linkEvents]="linkEvents"
-               (linkEnd)="onLinkInternal('end', pin)"
-               (linkStart)="onLinkInternal('start', pin)"
-               (removeLinks)="onLinkInternal('remove', pin)"
-               (calculatePosition)="calculatePinPosition(pin, $event)"></div>
-        </li>
+        @for (pin of item.pins.in; track pin) {
+          <li>
+            <span>{{ getInputPinName($index) | naiscToObservable | async }}</span>
+            <div [naiscItemPin]="pin" [item]="item" [type]="'in'"
+                 [readonly]="readonly"
+                 [linkEvents]="linkEvents"
+                 (linkEnd)="onLinkInternal('end', pin)"
+                 (linkStart)="onLinkInternal('start', pin)"
+                 (removeLinks)="onLinkInternal('remove', pin)"
+                 (calculatePosition)="calculatePinPosition(pin, $event)"></div>
+          </li>
+        }
       </ul>
+
       <ul class="naisc-item-pins-out">
-        <li *ngFor="let pin of item.pins.out; let idx = index">
-          <span>{{ getOutputPinName(idx) | naiscToObservable | async }}</span>
-          <div [naiscItemPin]="pin" [item]="item" [type]="'out'"
-               [readonly]="readonly"
-               [linkEvents]="linkEvents"
-               (linkEnd)="onLinkInternal('end', pin)"
-               (linkStart)="onLinkInternal('start', pin)"
-               (removeLinks)="onLinkInternal('remove', pin)"
-               (calculatePosition)="calculatePinPosition(pin, $event)"></div>
-        </li>
+        @for (pin of item.pins.out; track pin) {
+          <li>
+            <span>{{ getOutputPinName($index) | naiscToObservable | async }}</span>
+            <div [naiscItemPin]="pin" [item]="item" [type]="'out'"
+                 [readonly]="readonly"
+                 [linkEvents]="linkEvents"
+                 (linkEnd)="onLinkInternal('end', pin)"
+                 (linkStart)="onLinkInternal('start', pin)"
+                 (removeLinks)="onLinkInternal('remove', pin)"
+                 (calculatePosition)="calculatePinPosition(pin, $event)"></div>
+          </li>
+        }
       </ul>
     </div>
 
     <div class="naisc-item-content">
-      <ng-container #itemContentContainer></ng-container>
+      <ng-container #itemContentContainer/>
     </div>
   `,
   host: {
@@ -75,13 +88,9 @@ import {NaiscValidationError} from './shared/naisc-validation';
   encapsulation: ViewEncapsulation.None
 })
 export class NaiscItemComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('titleBar', {static: true, read: ElementRef}) public titleBarRef: ElementRef;
-  @ViewChild('itemContentContainer', {
-    static: true,
-    read: ViewContainerRef
-  }) public itemContentContainer: ViewContainerRef;
-
-  @ViewChildren(NaiscItemPinDirective) public pinRefs: QueryList<NaiscItemPinDirective>;
+  public readonly titleBarRef = viewChild.required<unknown, ElementRef<HTMLDivElement>>('titleBar', {read: ElementRef});
+  public readonly itemContentContainer = viewChild.required('itemContentContainer', {read: ViewContainerRef});
+  public readonly pinRefs = viewChildren(NaiscItemPinDirective);
 
   public get readonly(): boolean {
     return this._readonly;
@@ -119,10 +128,10 @@ export class NaiscItemComponent implements AfterViewInit, OnDestroy {
   public animationFunction: (start: number, end: number, t: number) => number;
   public removeItemIconClass: string;
 
-  public readonly projectionCurrent: ViewProjection;
+  public readonly projectionCurrent: ViewProjection = {x: 0, y: 0};
   private animationRequestRef: number;
 
-  private dragging: boolean;
+  private dragging = false;
 
   private contentRef: ComponentRef<NaiscItemContent>;
   private contentRefType: NaiscType;
@@ -131,12 +140,8 @@ export class NaiscItemComponent implements AfterViewInit, OnDestroy {
 
   private _readonly: boolean;
 
-  constructor(private el: ElementRef,
-              private zone: NgZone,
-              private resolver: ComponentFactoryResolver) {
-    this.dragging = false;
-    this.projectionCurrent = {x: 0, y: 0};
-  }
+  private readonly el = inject(ElementRef) as ElementRef<HTMLDivElement>;
+  private readonly zone = inject(NgZone);
 
   public ngAfterViewInit(): void {
     this.render();
@@ -151,9 +156,7 @@ export class NaiscItemComponent implements AfterViewInit, OnDestroy {
 
   @HostListener('mousedown', ['$event'])
   public onMouseDown(evt: Event): void {
-    if (this.readonly) {
-      return;
-    }
+    if (this.readonly) return;
 
     evt.stopPropagation();
     this.updateZIndex();
@@ -187,7 +190,7 @@ export class NaiscItemComponent implements AfterViewInit, OnDestroy {
   }
 
   public updateContentTemplate(): void {
-    if (!this.itemContentContainer) {
+    if (!this.itemContentContainer()) {
       return;
     }
 
@@ -206,8 +209,7 @@ export class NaiscItemComponent implements AfterViewInit, OnDestroy {
       this.contentRef.destroy();
     }
 
-    const factory = this.resolver.resolveComponentFactory(templateType);
-    this.contentRef = this.itemContentContainer.createComponent(factory);
+    this.contentRef = this.itemContentContainer().createComponent(templateType);
     this.contentRefType = templateType;
 
     this.contentRef.instance.item = this.item;
@@ -228,7 +230,10 @@ export class NaiscItemComponent implements AfterViewInit, OnDestroy {
     this.updateZIndex();
   }
 
-  public render(useAnimations: boolean = false, forced: boolean = false, thisZone: boolean = false): void {
+  public render(useAnimations = false,
+                forced = false,
+                thisZone = false): void {
+
     if (!forced && this.item.position.x === this.projectionCurrent.x && this.item.position.y === this.projectionCurrent.y) {
       return;
     }
@@ -236,10 +241,8 @@ export class NaiscItemComponent implements AfterViewInit, OnDestroy {
     const _render = () => {
       useAnimations = useAnimations && typeof window.requestAnimationFrame === 'function';
 
-      const c = this.el.nativeElement as HTMLDivElement;
-
       const setStyle = (x: number, y: number) => {
-        c.style.transform = `translate(${x}px, ${y}px)`;
+        this.el.nativeElement.style.transform = `translate(${x}px, ${y}px)`;
 
         this.projectionCurrent.x = x;
         this.projectionCurrent.y = y;
@@ -287,13 +290,11 @@ export class NaiscItemComponent implements AfterViewInit, OnDestroy {
   }
 
   public getItemExtent(): NaiscExtent {
-    const c = this.el.nativeElement as HTMLDivElement;
-
     let width = 100;
     let height = 100;
 
-    if (typeof c.getBoundingClientRect === 'function') {
-      const rect = c.getBoundingClientRect();
+    if (typeof this.el.nativeElement.getBoundingClientRect === 'function') {
+      const rect = this.el.nativeElement.getBoundingClientRect();
 
       width = rect.width / this.parentProjection.z;
       height = rect.height / this.parentProjection.z;
@@ -320,7 +321,7 @@ export class NaiscItemComponent implements AfterViewInit, OnDestroy {
   }
 
   private listenDragEvents(): void {
-    const cDown = fromEvent<MouseEvent>(this.titleBarRef.nativeElement, 'mousedown').pipe(
+    const cDown = fromEvent<MouseEvent>(this.titleBarRef().nativeElement, 'mousedown').pipe(
       filter(() => !this.readonly)
     );
     const cDrag = cDown.pipe(
@@ -338,7 +339,6 @@ export class NaiscItemComponent implements AfterViewInit, OnDestroy {
       )),
       share()
     );
-
 
     let evtPos: ViewProjection;
     let itemPos: ViewProjection;
@@ -387,17 +387,15 @@ export class NaiscItemComponent implements AfterViewInit, OnDestroy {
     }
 
     const localPosition = this.getItemPosition();
-    this.pinRefs.forEach(pinRef => this.calculatePinPosition(pinRef.pin, pinRef.getPinPosition(), localPosition));
+    this.pinRefs().forEach(pinRef => this.calculatePinPosition(pinRef.pin, pinRef.getPinPosition(), localPosition));
   }
 
   private getItemPosition(): ViewProjection {
-    const c = this.el.nativeElement as HTMLDivElement;
-
-    if (typeof c.getBoundingClientRect !== 'function') {
+    if (typeof this.el.nativeElement.getBoundingClientRect !== 'function') {
       return {x: 0, y: 0};
     }
 
-    const rect = c.getBoundingClientRect();
+    const rect = this.el.nativeElement.getBoundingClientRect();
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 

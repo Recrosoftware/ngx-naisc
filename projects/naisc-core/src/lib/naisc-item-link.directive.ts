@@ -1,13 +1,21 @@
-import {ChangeDetectorRef, Directive, DoCheck, HostBinding, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Directive,
+  DoCheck,
+  HostBinding,
+  inject,
+  Input,
+  OnChanges,
+  SimpleChanges
+} from '@angular/core';
 import {ViewProjection} from './internal/models';
-
 import {NAISC_PIN_POSITION} from './internal/symbols';
-
 import {NaiscPinDescriptor} from './shared/naisc-item-descriptor';
 
 
 @Directive({
-  selector: 'path[naiscItemLink]'
+  selector: 'path[naiscItemLink]',
+  standalone: true
 })
 export class NaiscItemLinkDirective implements OnChanges, DoCheck {
   @Input() public sourcePin: NaiscPinDescriptor & { [NAISC_PIN_POSITION]?: ViewProjection };
@@ -20,8 +28,7 @@ export class NaiscItemLinkDirective implements OnChanges, DoCheck {
   private localSourcePosition: ViewProjection;
   private localTargetPosition: ViewProjection;
 
-  constructor(private changeDetector: ChangeDetectorRef) {
-  }
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   public ngOnChanges(changes: SimpleChanges): void {
     if ('sourcePin' in changes) {
@@ -56,9 +63,7 @@ export class NaiscItemLinkDirective implements OnChanges, DoCheck {
       mustRender = mustRender || !this.targetPosition;
     }
 
-    if (mustRender) {
-      this.render();
-    }
+    if (mustRender) this.render();
   }
 
   private render(): void {

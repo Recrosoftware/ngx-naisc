@@ -3,6 +3,7 @@ import {NaiscItem, NaiscItemContent} from '@naisc/core';
 
 
 @Component({
+  standalone: true,
   template: `
     <div #testRef>test</div>
 
