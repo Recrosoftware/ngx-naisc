@@ -275,10 +275,11 @@ export class Naisc implements OnInit, AfterViewInit, OnChanges, OnDestroy {
       evt.preventDefault();
       evt.stopPropagation();
 
-      const deltaZoom = -evt.deltaY * .01;
+      const zoomFactor = 2;
+      const deltaZoom = Math.abs(evt.deltaY * .01) * (evt.deltaY > 0 ? 1 / zoomFactor : zoomFactor);
       const {x, y} = this.getMousePositionInContainer(evt);
 
-      this.setZoom(this.projectionTarget.z + deltaZoom, {
+      this.setZoom(this.projectionTarget.z * deltaZoom, {
         posX: x, posY: y,
         triggerRender: false
       });
